@@ -3,6 +3,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import matplotlib.pyplot as plt
+
 #Exercise 1: Classify images of handwritten digits
 
 #create the input node
@@ -39,6 +40,7 @@ epoch_number=10
 history=model.fit(x_train_norm,y_train,batch_size=56,epochs=epoch_number,validation_split=0.2)
 
 fig,axs=plt.subplots(1,2,figsize=(10,5))
+fig.suptitle('Model training and loss')
 axs[0].plot(range(epoch_number),history.history['accuracy'],label='Training')
 axs[0].plot(range(epoch_number),history.history['val_accuracy'],label='Testing')
 axs[0].set_xlabel('Epoch')
@@ -51,6 +53,15 @@ axs[1].set_ylabel('Loss')
 axs[1].set_title('Model loss')
 plt.show()
 
-#plotting individual numbers
-plt.imshow(x_train[0],cmap=plt.get_cmap('gray'))
+#choose an index 
+index_of_value_to_predict=1
+#get predictions on testing data
+y_hat_test=model.predict(x_test_norm)
+#plot the number from the testing set 
+plt.imshow(x_test[index_of_value_to_predict],cmap=plt.get_cmap('gray'))
+#prediction given by the model
+prediction_1=np.where(y_hat_test[index_of_value_to_predict,:]==max(y_hat_test[index_of_value_to_predict,:]))[0][0]
+print('\nThe true label of the value in the testing set is ',y_test[index_of_value_to_predict],'\nThe predicted value is ',prediction_1)
+
+
 
