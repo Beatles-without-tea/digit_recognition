@@ -6,10 +6,18 @@ import matplotlib.pyplot as plt
 
 #Exercise 1: Classify images of handwritten digits
 
+#get the data
+(x_train,y_train),(x_test,y_test)=keras.datasets.mnist.load_data()
+
+# Normalize pixel values to be between 0 and 1
+x_train_norm=x_train.reshape(60000,784).astype("float32")/255
+x_test_norm=x_test.reshape(10000,784).astype("float32")/255
+
+###############Architecture A of a neural network without convolution
+
 #create the input node
 inputs=keras.Input(shape=(784,))
-#input shape of the image
-img_imputs=keras.Input(shape=(28,28,1))
+
 
 #add a new node in the graph of layers
 #first hidden layer
@@ -25,18 +33,15 @@ model.summary()
 #plot of the model
 keras.utils.plot_model(model,show_shapes=True)
 
-(x_train,y_train),(x_test,y_test)=keras.datasets.mnist.load_data()
-
-
-x_train_norm=x_train.reshape(60000,784).astype("float32")/255
-x_test_norm=x_test.reshape(10000,784).astype("float32")/255
 
 model.compile(
     loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
     optimizer=keras.optimizers.RMSprop(),
     metrics=["accuracy"])
 
+#set the epoch number
 epoch_number=10
+#train the neural network on the mnist dataset (training set only)
 history=model.fit(x_train_norm,y_train,batch_size=56,epochs=epoch_number,validation_split=0.2)
 
 fig,axs=plt.subplots(1,2,figsize=(10,5))
@@ -63,5 +68,46 @@ plt.imshow(x_test[index_of_value_to_predict],cmap=plt.get_cmap('gray'))
 prediction_1=np.where(y_hat_test[index_of_value_to_predict,:]==max(y_hat_test[index_of_value_to_predict,:]))[0][0]
 print('\nThe true label of the value in the testing set is ',y_test[index_of_value_to_predict],'\nThe predicted value is ',prediction_1)
 
+###############Architecture B of a convolutional neural network
+#change shape of data for convolution
+
+
+
+x_train_dims=np.expand_dims(x_train/255,axis=-1)
+x_test_dims=np.expand_dims(x_test/255,axis=-1)
+#model 
+
+inputs=layers.Input(shape=(28,28,1))
+
+conv_layer=layers.Conv2D(32,(3,3),activation='relu')(inputs)
+max_pooling=layers.MaxPool2D((2,2),(2,2))(conv_layer)
+flat=layers.Flatten()(max_pooling)
+outputs=layers.Dense(10,activation=tf.nn.softmax)(flat)
+
+model=keras.Model(inputs=inputs,outputs=outputs)
+model.summary()
+
+model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['accuracy'])
+history_cnn=model.fit(x_train_dims,y_train,epochs=5)
+
+
+
+
+
+model = keras.Sequential()
+model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model.add(layers.Flatten())
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(10))
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+
+history = model.fit(x_train_dims, y_train, epochs=10, 
+                    validation_data=(x_test_dims, y_test))
 
 
