@@ -30,7 +30,7 @@ outputs=layers.Dense(10,activation='softmax')(hidden2)
 model=keras.Model(inputs=inputs,outputs=outputs,name='mnist_grayscale')
 #summary
 model.summary()
-#plot of the model
+#illustrate with diagram using function in keras 
 keras.utils.plot_model(model,show_shapes=True)
 
 
@@ -45,17 +45,20 @@ epoch_number=10
 history=model.fit(x_train_norm,y_train,batch_size=56,epochs=epoch_number,validation_split=0.2)
 
 fig,axs=plt.subplots(1,2,figsize=(10,5))
-fig.suptitle('Model training and loss')
+fig.suptitle('NN Model training and loss')
 axs[0].plot(range(epoch_number),history.history['accuracy'],label='Training')
 axs[0].plot(range(epoch_number),history.history['val_accuracy'],label='Testing')
 axs[0].set_xlabel('Epoch')
 axs[0].set_ylabel('Accuracy')
 axs[0].set_title('Model accuracy')
+axs[0].legend()
 axs[1].plot(range(epoch_number),history.history['loss'],label='Training')
 axs[1].plot(range(epoch_number),history.history['val_loss'],label='Testing')
 axs[1].set_xlabel('Epoch')
 axs[1].set_ylabel('Loss')
 axs[1].set_title('Model loss')
+axs[1].legend()
+plt.legend()
 plt.show()
 
 #choose an index 
@@ -77,23 +80,6 @@ x_train_dims=np.expand_dims(x_train/255,axis=-1)
 x_test_dims=np.expand_dims(x_test/255,axis=-1)
 #model 
 
-inputs=layers.Input(shape=(28,28,1))
-
-conv_layer=layers.Conv2D(32,(3,3),activation='relu')(inputs)
-max_pooling=layers.MaxPool2D((2,2),(2,2))(conv_layer)
-flat=layers.Flatten()(max_pooling)
-outputs=layers.Dense(10,activation=tf.nn.softmax)(flat)
-
-model=keras.Model(inputs=inputs,outputs=outputs)
-model.summary()
-
-model.compile(optimizer='adam',loss='sparse_categorical_crossentropy',metrics=['accuracy'])
-history_cnn=model.fit(x_train_dims,y_train,epochs=5)
-
-
-
-
-
 model = keras.Sequential()
 model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
 model.add(layers.MaxPooling2D((2, 2)))
@@ -107,7 +93,26 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-history = model.fit(x_train_dims, y_train, epochs=10, 
-                    validation_data=(x_test_dims, y_test))
+#illustrate with diagram using function in keras 
+keras.utils.plot_model(model,show_shapes=True)
+#fit the model
+history_cnn = model.fit(x_train_dims, y_train, epochs=10,validation_split=0.2 )
+#plot training and validation loss and accuracy
+fig,axs=plt.subplots(1,2,figsize=(10,5))
+fig.suptitle('CNN Model training and loss')
+axs[0].plot(range(epoch_number),history_cnn.history['accuracy'],label='Training')
+axs[0].plot(range(epoch_number),history_cnn.history['val_accuracy'],label='Testing')
+axs[0].set_xlabel('Epoch')
+axs[0].set_ylabel('Accuracy')
+axs[0].set_title('Model accuracy')
+axs[0].legend()
+axs[1].plot(range(epoch_number),history_cnn.history['loss'],label='Training')
+axs[1].plot(range(epoch_number),history_cnn.history['val_loss'],label='Testing')
+axs[1].set_xlabel('Epoch')
+axs[1].set_ylabel('Loss')
+axs[1].set_title('Model loss')
+axs[1].legend()
+plt.show()
+
 
 
