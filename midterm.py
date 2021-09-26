@@ -98,7 +98,7 @@ model_cnn.add(layers.MaxPooling2D((2, 2)))
 model_cnn.add(layers.Conv2D(64, (3, 3), activation='relu'))
 model_cnn.add(layers.Flatten())
 model_cnn.add(layers.Dense(64, activation='relu'))
-model_cnn.add(layers.Dense(10))
+model_cnn.add(layers.Dense(10,activation='softmax'))
 model_cnn.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
@@ -136,9 +136,9 @@ plt.show()
 prediction_1_cnn=np.where(y_hat_test_cnn[index_of_value_to_predict_cnn,:]==max(y_hat_test_cnn[index_of_value_to_predict_cnn,:]))[0][0]
 print('\nThe true label of the value in the testing set is ',y_test[index_of_value_to_predict_cnn],'\nThe predicted value using the CNN model is ',prediction_1_cnn)
 plt.bar(range(0,10),list(y_hat_test_cnn[index_of_value_to_predict_cnn,:]))
-plt.title('Probabilities of class membership')
-plt.ylabel('probability')
-plt.xlabel('number')
+plt.title('CNN model Probabilities of class membership')
+plt.ylabel('Probability')
+plt.xlabel('Number')
 plt.show()
 
 scores_cnn = model_cnn.evaluate(x_test_dims, y_test)
