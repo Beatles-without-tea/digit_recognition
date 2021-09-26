@@ -19,10 +19,12 @@ x_test_norm=x_test.reshape(10000,784).astype("float32")/255
 inputs=keras.Input(shape=(784,))
 
 
-#add a new node in the graph of layers
+#Feed forward neural network with 2 hidden layers
 #first hidden layer
+#activation using the rectified linear function
 hidden1=layers.Dense(56,activation='relu')(inputs)
 #second hidden layer
+#activation using the rectified linear function
 hidden2=layers.Dense(56,activation='relu')(hidden1)
 #output
 outputs=layers.Dense(10,activation='softmax')(hidden2)
@@ -35,8 +37,8 @@ keras.utils.plot_model(model,show_shapes=True)
 
 
 model.compile(
-    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-    optimizer=keras.optimizers.RMSprop(),
+    loss=keras.losses.SparseCategoricalCrossentropy(),
+    optimizer='sgd',
     metrics=["accuracy"])
 
 #set the epoch number
@@ -65,7 +67,7 @@ plt.show()
 index_of_value_to_predict=1
 #get predictions on testing data
 y_hat_test=model.predict(x_test_norm)
-#plot the number from the testing set 
+#plot the number from the testing set of the given index we want to predict
 plt.imshow(x_test[index_of_value_to_predict],cmap=plt.get_cmap('gray'))
 plt.show()
 #prediction given by the model
@@ -82,10 +84,8 @@ plt.show()
 scores = model.evaluate(x_test_norm, y_test)
 print('The NN model gives us an accuracy of '+str(scores[1])+' and a loss of '+str(scores[0]))
 ###############Architecture B of a convolutional neural network
+
 #change shape of data for convolution
-
-
-
 x_train_dims=np.expand_dims(x_train/255,axis=-1)
 x_test_dims=np.expand_dims(x_test/255,axis=-1)
 #model 
@@ -142,6 +142,19 @@ plt.xlabel('Number')
 plt.show()
 
 scores_cnn = model_cnn.evaluate(x_test_dims, y_test)
-print('\nThe NN model gives us an accuracy of '+str(scores_cnn[1])+' and a loss of '+str(scores_cnn[0]))
+print('\nThe CNN model gives us an accuracy of '+str(scores_cnn[1])+' and a loss of '+str(scores_cnn[0]))
+
+#Exercise 2: Detect the presence of a hand-written digit on an image
+
+#create random noise images
+random_images=np.random.uniform(0,255,(30000,28 ,28))
+#normalize data
+random_images_norm=random_images.reshape(30000,784).astype("float32")/255
+#make labels
+digit_labels=np.array(['digit' if i<=30000 else 'non-digit' for i in range(60000)])
+#show random image
+plt.imshow(random_images[0],cmap=plt.get_cmap('gray'))
+plt.show()
+
 
 
