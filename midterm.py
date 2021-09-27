@@ -4,6 +4,8 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
+from sklearn.metrics import confusion_matrix
+import pandas as pd
 
 #Exercise 1: Classify images of handwritten digits
 
@@ -206,9 +208,19 @@ x_test_digit,digit_labels_test=shuffle(x_test_digit,digit_labels_test)
 #generated images
 scores = model.evaluate(x_test_digit,digit_labels_test)
 
+#Propose a vizualization of the classifier’s predictions.
+#we shall be using a confusion matrix
 #get predictions
 predictions=model.predict(x_test_digit)
-y_hat_digit=[0 if predictions[i][0]>predictions[i][1] else 1 for i in range(len(predictions))]
+y_hat_digit=np.array([0 if predictions[i][0]>predictions[i][1] else 1 for i in range(len(predictions))])
+#make confusion matrix
+conf_matrix=confusion_matrix(digit_labels_test, y_hat_digit)
+conf_matrix_df=pd.DataFrame(columns=['Predicted 1','Predicted 0'],index=['Actual 1','Actual 0'])
+conf_matrix_df.iloc[0,:]=conf_matrix[0,:]
+conf_matrix_df.iloc[1,:]=conf_matrix[1,:]
+print(conf_matrix_df)
+
+
 
 
 
