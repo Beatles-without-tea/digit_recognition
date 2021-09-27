@@ -3,6 +3,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import matplotlib.pyplot as plt
+from sklearn.utils import shuffle
 
 #Exercise 1: Classify images of handwritten digits
 
@@ -151,10 +152,63 @@ random_images=np.random.uniform(0,255,(30000,28 ,28))
 #normalize data
 random_images_norm=random_images.reshape(30000,784).astype("float32")/255
 #make labels
-digit_labels=np.array(['digit' if i<=30000 else 'non-digit' for i in range(60000)])
+#1 for digit, 0 for non digit
+digit_labels=np.array([1 if i<=30000 else 0 for i in range(60000)])
 #show random image
 plt.imshow(random_images[0],cmap=plt.get_cmap('gray'))
 plt.show()
+#making training set for the neural network
+x_train_digit=np.append(x_train_norm[:30000,:],random_images_norm,axis=0)
+x_train_digit,digit_labels=shuffle(x_train_digit,digit_labels)
+#create the input node
+inputs=keras.Input(shape=(784,))
+
+
+#Feed forward neural network with 2 hidden layers
+#first hidden layer
+#activation using the rectified linear function
+hidden1=layers.Dense(56,activation='relu')(inputs)
+#second hidden layer
+#activation using the rectified linear function
+hidden2=layers.Dense(56,activation='relu')(hidden1)
+#output
+outputs=layers.Dense(2,activation='softmax')(hidden2)
+#define the model
+model=keras.Model(inputs=inputs,outputs=outputs,name='mnist_grayscale')
+#summary
+model.summary()
+#illustrate with diagram using function in keras 
+keras.utils.plot_model(model,show_shapes=True)
+
+
+model.compile(
+    loss=keras.losses.SparseCategoricalCrossentropy(),
+    optimizer='sgd',
+    metrics=["accuracy"])
+
+#set the epoch number
+epoch_number=5
+#train the neural network on the mnist dataset (training set only)
+history=model.fit(x_train_digit,digit_labels,batch_size=56,epochs=epoch_number,validation_split=0.2)
+
+#make testing data
+#create random noise images
+random_images_test=np.random.uniform(0,255,(10000,28 ,28))
+#normalize data
+random_images_norm_test=random_images_test.reshape(10000,784).astype("float32")/255
+#make labels
+#1 for digit, 0 for non digit
+digit_labels_test=np.array([1 if i<=10000 else 0 for i in range(20000)])
+#making testing set for the neural network
+x_test_digit=np.append(x_test_norm[:10000,:],random_images_norm_test,axis=0)
+x_test_digit,digit_labels_test=shuffle(x_test_digit,digit_labels_test)
+#Evaluate the classifier’s performance using the 10, 000 MNIST test images and 10, 000 randomly
+#generated images
+scores = model.evaluate(x_test_digit,digit_labels_test)
+
+#get predictions
+predictions=model.predict(x_test_digit)
+y_hat_digit=[0 if predictions[i][0]>predictions[i][1] else 1 for i in range(len(predictions))]
 
 
 
