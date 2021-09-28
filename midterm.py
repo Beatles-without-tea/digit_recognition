@@ -7,6 +7,7 @@ from sklearn.utils import shuffle
 from sklearn.metrics import confusion_matrix
 import pandas as pd
 import seaborn as sns
+from random import randrange
 #####################################################
 #Exercise 1: Classify images of handwritten digits
 #####################################################
@@ -50,7 +51,7 @@ model.compile(
 epoch_number=10
 #train the neural network on the mnist dataset (training set only)
 history=model.fit(x_train_norm,y_train,batch_size=56,epochs=epoch_number,validation_split=0.2)
-
+#plot training and validation loss and accuracy
 fig,axs=plt.subplots(1,2,figsize=(10,5))
 fig.suptitle('NN Model training and loss')
 axs[0].plot(range(epoch_number),history.history['accuracy'],label='Training')
@@ -69,7 +70,7 @@ plt.legend()
 plt.show()
 
 #choose an index 
-index_of_value_to_predict=1
+index_of_value_to_predict=randrange(len(x_test))
 #get predictions on testing data
 y_hat_test=model.predict(x_test_norm)
 
@@ -139,7 +140,7 @@ plt.show()
 
 #predictions
 #choose an index 
-index_of_value_to_predict_cnn=11
+index_of_value_to_predict_cnn=randrange(len(x_test))
 #get predictions on testing data
 y_hat_test_cnn=model_cnn.predict(x_test_dims)
 #prediction given by the model
@@ -158,6 +159,7 @@ axs[1].set_ylabel('probability')
 axs[1].set_xlabel('number')
 plt.show()
 
+#evaluate the model
 scores_cnn = model_cnn.evaluate(x_test_dims, y_test)
 print('\nThe CNN model gives us an accuracy of '+str(scores_cnn[1])+' and a loss of '+str(scores_cnn[0]))
 
@@ -179,6 +181,7 @@ plt.imshow(random_images[0],cmap=plt.get_cmap('gray'))
 plt.show()
 #making training set for the neural network
 x_train_digit=np.append(x_train_norm[:30000,:],random_images_norm,axis=0)
+#shuffle the data
 x_train_digit,digit_labels=shuffle(x_train_digit,digit_labels)
 #create the input node
 inputs=keras.Input(shape=(784,))
@@ -324,7 +327,7 @@ scores_fashion = model_fashion.evaluate(x_fashion_test,y_fashion_test)
 y_hat_fashion_test=model_fashion.predict(x_fashion_test)
 
 #visualize predictions
-index_of_value_to_predict_fashion=9
+index_of_value_to_predict_fashion=randrange(len(x_fashion_test))
 prediction_fashion=np.where(y_hat_fashion_test[index_of_value_to_predict_fashion,:]==max(y_hat_fashion_test[index_of_value_to_predict_fashion,:]))[0][0]
 #make plot to visualize
 fig,axs=plt.subplots(1,2,figsize=(10,5))
