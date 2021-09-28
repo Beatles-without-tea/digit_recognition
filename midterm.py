@@ -176,14 +176,14 @@ hidden2=layers.Dense(56,activation='relu')(hidden1)
 #output
 outputs=layers.Dense(2,activation='softmax')(hidden2)
 #define the model
-model=keras.Model(inputs=inputs,outputs=outputs,name='mnist_grayscale')
+model_digit=keras.Model(inputs=inputs,outputs=outputs,name='digit_recognition')
 #summary
-model.summary()
+model_digit.summary()
 #illustrate with diagram using function in keras 
-keras.utils.plot_model(model,show_shapes=True)
+keras.utils.plot_model(model_digit,show_shapes=True)
 
 
-model.compile(
+model_digit.compile(
     loss=keras.losses.SparseCategoricalCrossentropy(),
     optimizer='sgd',
     metrics=["accuracy"])
@@ -191,7 +191,7 @@ model.compile(
 #set the epoch number
 epoch_number=5
 #train the neural network on the mnist dataset (training set only)
-history=model.fit(x_train_digit,digit_labels,batch_size=56,epochs=epoch_number,validation_split=0.2)
+history_digit=model_digit.fit(x_train_digit,digit_labels,batch_size=56,epochs=epoch_number,validation_split=0.2)
 
 #make testing data
 #create random noise images
@@ -206,12 +206,12 @@ x_test_digit=np.append(x_test_norm[:10000,:],random_images_norm_test,axis=0)
 x_test_digit,digit_labels_test=shuffle(x_test_digit,digit_labels_test)
 #Evaluate the classifier’s performance using the 10, 000 MNIST test images and 10, 000 randomly
 #generated images
-scores = model.evaluate(x_test_digit,digit_labels_test)
+scores = model_digit.evaluate(x_test_digit,digit_labels_test)
 
 #Propose a vizualization of the classifier’s predictions.
 #we shall be using a confusion matrix
 #get predictions
-predictions=model.predict(x_test_digit)
+predictions=model_digit.predict(x_test_digit)
 y_hat_digit=np.array([0 if predictions[i][0]>predictions[i][1] else 1 for i in range(len(predictions))])
 #make confusion matrix
 conf_matrix=confusion_matrix(digit_labels_test, y_hat_digit)
@@ -221,6 +221,76 @@ conf_matrix_df.iloc[1,:]=conf_matrix[1,:]
 print(conf_matrix_df)
 
 
+#Exercise 3: Practice on other datasets
+
+#we shall be using the fashion mnist dataset
+#we import the data from tensorflow
+fashion_mnist = tf.keras.datasets.fashion_mnist
+#we separate into testing and training data
+(x_fashion_train,y_fashion_train),(x_fashion_test,y_fashion_test)= fashion_mnist.load_data()
+print('The training data is of shape: ',x_fashion_train.shape)
+print('The training labels are of shape: ',y_fashion_train.shape)
+print('The testing data is of shape: ',x_fashion_test.shape)
+print('The testing labels are of shape: ',y_fashion_test.shape)
+print('There are',len(np.unique(y_fashion_train)),'labels')
+#The labels each correspond to a type of clothing:
+    #0-T-shirt-top
+    #1 Trouser
+    #2 Pullover
+    #3 Dress
+    #4 Coat
+    #5 Sandal
+    #6 Shirt
+    #7 Sneaker
+    #8 Bag
+    #9 Ankle boot
+
+class_names=['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat','Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+
+#view image
+plt.imshow(x_fashion_train[1],cmap=plt.get_cmap('gray'))
+plt.show()
+#We can see it's a t-shirt
 
 
 
+
+x_fashion_train=x_fashion_train.reshape(30000,784).astype("float32")/255
+x_fashion_test=x_fashion_test.reshape(30000,784).astype("float32")/255
+
+#create the input node
+inputs=keras.Input(shape=(784,))
+#Feed forward neural network with 2 hidden layers
+#first hidden layer
+#activation using the rectified linear function
+hidden1=layers.Dense(56,activation='relu')(inputs)
+#second hidden layer
+#activation using the rectified linear function
+hidden2=layers.Dense(56,activation='relu')(hidden1)
+#output
+outputs=layers.Dense(2,activation='softmax')(hidden2)
+#define the model
+model_fashion=keras.Model(inputs=inputs,outputs=outputs,name='digit_recognition')
+#summary
+model_fashion.summary()
+#illustrate with diagram using function in keras 
+keras.utils.plot_model(model_fashion,show_shapes=True)
+#summary
+model_digit.summary()
+#illustrate with diagram using function in keras 
+keras.utils.plot_model(model_fashion,show_shapes=True)
+
+
+model_fashion.compile(
+    loss=keras.losses.SparseCategoricalCrossentropy(),
+    optimizer='sgd',
+    metrics=["accuracy"])
+
+#set the epoch number
+epoch_number=5
+#train the neural network on the mnist dataset (training set only)
+model_fashion=model_fashion.fit(x_fashion_train,y_fashion_train,batch_size=56,epochs=epoch_number,validation_split=0.2)
+
+
+#generated images
+scores = model_fashion.evaluate(x_fashion_test,y_fashion_test)
