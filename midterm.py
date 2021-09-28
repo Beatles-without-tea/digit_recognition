@@ -70,17 +70,21 @@ plt.show()
 index_of_value_to_predict=1
 #get predictions on testing data
 y_hat_test=model.predict(x_test_norm)
-#plot the number from the testing set of the given index we want to predict
-plt.imshow(x_test[index_of_value_to_predict],cmap=plt.get_cmap('gray'))
-plt.show()
+
 #prediction given by the model
 prediction_1=np.where(y_hat_test[index_of_value_to_predict,:]==max(y_hat_test[index_of_value_to_predict,:]))[0][0]
-print('\nThe true label of the value in the testing set is ',y_test[index_of_value_to_predict],'\nThe predicted value is ',prediction_1)
+print('\nThe true label of the value in the testing set is ',y_test[index_of_value_to_predict],'\nThe predicted value is ',prediction_1,' with probability: ',max(y_hat_test[index_of_value_to_predict,:]))
+
 #View network predictions (probabilities of class membership)
-plt.bar(range(0,10),list(y_hat_test[index_of_value_to_predict,:]))
-plt.title('Probabilities of class membership')
-plt.ylabel('probability')
-plt.xlabel('number')
+#plot the number from the testing set of the given index we want to predict
+fig,axs=plt.subplots(1,2,figsize=(10,5))
+axs[0].imshow(x_test[index_of_value_to_predict],cmap=plt.get_cmap('gray'))
+axs[0].set_title('True value')
+axs[1].bar(range(0,10),list(y_hat_test[index_of_value_to_predict,:]),label='The NN predicts '+str(2)+' with probability '+str(max(y_hat_test[index_of_value_to_predict,:])))
+axs[1].legend(bbox_to_anchor=(1,-0.12))
+axs[1].set_title('Probabilities of class membership')
+axs[1].set_ylabel('probability')
+axs[1].set_xlabel('number')
 plt.show()
 
 #evaluate on mnist dataset
@@ -253,43 +257,36 @@ plt.show()
 #We can see it's a t-shirt
 
 
+#x_fashion_train=x_fashion_train.reshape(60000,784).astype("float32")/255
+#x_fashion_train=x_fashion_test.reshape(10000,784).astype("float32")/255
+
+x_fashion_train=np.expand_dims(x_fashion_train/255,axis=-1)
+x_fashion_test=np.expand_dims(x_fashion_test/255,axis=-1)
+
+model_fashion=keras.Sequential()
+model_fashion.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+model_fashion.add(layers.MaxPooling2D((2, 2)))
+model_fashion.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model_fashion.add(layers.MaxPooling2D((2, 2)))
+model_fashion.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model_fashion.add(layers.Flatten())
+model_fashion.add(layers.Dense(64, activation='relu'))
+model_fashion.add(layers.Dense(10,activation='softmax'))
+model_fashion.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
 
 
-x_fashion_train=x_fashion_train.reshape(30000,784).astype("float32")/255
-x_fashion_test=x_fashion_test.reshape(30000,784).astype("float32")/255
-
-#create the input node
-inputs=keras.Input(shape=(784,))
-#Feed forward neural network with 2 hidden layers
-#first hidden layer
-#activation using the rectified linear function
-hidden1=layers.Dense(56,activation='relu')(inputs)
-#second hidden layer
-#activation using the rectified linear function
-hidden2=layers.Dense(56,activation='relu')(hidden1)
-#output
-outputs=layers.Dense(2,activation='softmax')(hidden2)
-#define the model
-model_fashion=keras.Model(inputs=inputs,outputs=outputs,name='digit_recognition')
+#illustrate with diagram using function in keras 
+keras.utils.plot_model(model_fashion,show_shapes=True)
 #summary
 model_fashion.summary()
-#illustrate with diagram using function in keras 
-keras.utils.plot_model(model_fashion,show_shapes=True)
-#summary
-model_digit.summary()
-#illustrate with diagram using function in keras 
-keras.utils.plot_model(model_fashion,show_shapes=True)
 
-
-model_fashion.compile(
-    loss=keras.losses.SparseCategoricalCrossentropy(),
-    optimizer='sgd',
-    metrics=["accuracy"])
 
 #set the epoch number
 epoch_number=5
 #train the neural network on the mnist dataset (training set only)
-model_fashion=model_fashion.fit(x_fashion_train,y_fashion_train,batch_size=56,epochs=epoch_number,validation_split=0.2)
+history_fashion=model_fashion.fit(x_fashion_train,y_fashion_train,batch_size=56,epochs=epoch_number,validation_split=0.2)
 
 
 #generated images
