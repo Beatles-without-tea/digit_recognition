@@ -7,20 +7,23 @@ from sklearn.utils import shuffle
 from sklearn.metrics import confusion_matrix
 import pandas as pd
 
+#####################################################
 #Exercise 1: Classify images of handwritten digits
+#####################################################
 
-#get the data
+#fetch the data
 (x_train,y_train),(x_test,y_test)=keras.datasets.mnist.load_data()
 
 # Normalize pixel values to be between 0 and 1
 x_train_norm=x_train.reshape(60000,784).astype("float32")/255
 x_test_norm=x_test.reshape(10000,784).astype("float32")/255
 
+###############
 ###############Architecture A of a neural network without convolution
+###############
 
 #create the input node
 inputs=keras.Input(shape=(784,))
-
 
 #Feed forward neural network with 2 hidden layers
 #first hidden layer
@@ -37,8 +40,7 @@ model=keras.Model(inputs=inputs,outputs=outputs,name='mnist_grayscale')
 model.summary()
 #illustrate with diagram using function in keras 
 keras.utils.plot_model(model,show_shapes=True)
-
-
+#compile the model
 model.compile(
     loss=keras.losses.SparseCategoricalCrossentropy(),
     optimizer='sgd',
@@ -72,15 +74,16 @@ index_of_value_to_predict=1
 y_hat_test=model.predict(x_test_norm)
 
 #prediction given by the model
-prediction_1=np.where(y_hat_test[index_of_value_to_predict,:]==max(y_hat_test[index_of_value_to_predict,:]))[0][0]
-print('\nThe true label of the value in the testing set is ',y_test[index_of_value_to_predict],'\nThe predicted value is ',prediction_1,' with probability: ',max(y_hat_test[index_of_value_to_predict,:]))
+prediction_NN=np.where(y_hat_test[index_of_value_to_predict,:]==max(y_hat_test[index_of_value_to_predict,:]))[0][0]
+print('\nThe true label of the value in the testing set is ',y_test[index_of_value_to_predict],'\nThe predicted value is ',prediction_NN,' with probability: ',max(y_hat_test[index_of_value_to_predict,:]))
 
 #View network predictions (probabilities of class membership)
 #plot the number from the testing set of the given index we want to predict
 fig,axs=plt.subplots(1,2,figsize=(10,5))
+fig.suptitle('NN predictions')
 axs[0].imshow(x_test[index_of_value_to_predict],cmap=plt.get_cmap('gray'))
 axs[0].set_title('True value')
-axs[1].bar(range(0,10),list(y_hat_test[index_of_value_to_predict,:]),label='The NN predicts '+str(2)+' with probability '+str(max(y_hat_test[index_of_value_to_predict,:])))
+axs[1].bar(range(0,10),list(y_hat_test[index_of_value_to_predict,:]),label='The NN predicts '+str(prediction_NN)+' with probability '+str(max(y_hat_test[index_of_value_to_predict,:])))
 axs[1].legend(bbox_to_anchor=(1,-0.12))
 axs[1].set_title('Probabilities of class membership')
 axs[1].set_ylabel('probability')
@@ -88,15 +91,18 @@ axs[1].set_xlabel('number')
 plt.show()
 
 #evaluate on mnist dataset
-scores = model.evaluate(x_test_norm, y_test)
-print('The NN model gives us an accuracy of '+str(scores[1])+' and a loss of '+str(scores[0]))
+scores_NN = model.evaluate(x_test_norm, y_test)
+print('The NN model gives us an accuracy of '+str(scores_NN[1])+' and a loss of '+str(scores_NN[0]))
+
+###############
 ###############Architecture B of a convolutional neural network
+###############
 
 #change shape of data for convolution
 x_train_dims=np.expand_dims(x_train/255,axis=-1)
 x_test_dims=np.expand_dims(x_test/255,axis=-1)
-#model 
 
+#model 
 model_cnn = keras.Sequential()
 model_cnn.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
 model_cnn.add(layers.MaxPooling2D((2, 2)))
@@ -136,22 +142,30 @@ plt.show()
 index_of_value_to_predict_cnn=11
 #get predictions on testing data
 y_hat_test_cnn=model_cnn.predict(x_test_dims)
-#plot the number from the testing set 
-plt.imshow(x_test[index_of_value_to_predict_cnn],cmap=plt.get_cmap('gray'))
-plt.show()
 #prediction given by the model
-prediction_1_cnn=np.where(y_hat_test_cnn[index_of_value_to_predict_cnn,:]==max(y_hat_test_cnn[index_of_value_to_predict_cnn,:]))[0][0]
-print('\nThe true label of the value in the testing set is ',y_test[index_of_value_to_predict_cnn],'\nThe predicted value using the CNN model is ',prediction_1_cnn)
-plt.bar(range(0,10),list(y_hat_test_cnn[index_of_value_to_predict_cnn,:]))
-plt.title('CNN model Probabilities of class membership')
-plt.ylabel('Probability')
-plt.xlabel('Number')
+prediction_cnn=np.where(y_hat_test_cnn[index_of_value_to_predict_cnn,:]==max(y_hat_test_cnn[index_of_value_to_predict_cnn,:]))[0][0]
+print('\nThe true label of the value in the testing set is ',y_test[index_of_value_to_predict_cnn],'\nThe predicted value using the CNN model is ',prediction_cnn)
+
+#View network predictions (probabilities of class membership)
+fig,axs=plt.subplots(1,2,figsize=(10,5))
+fig.suptitle('CNN predictions')
+axs[0].imshow(x_test[index_of_value_to_predict_cnn],cmap=plt.get_cmap('gray'))
+axs[0].set_title('True value')
+axs[1].bar(range(0,10),list(y_hat_test_cnn[index_of_value_to_predict_cnn,:]),label='The NN predicts '+str(prediction_cnn)+' with probability '+str(max(y_hat_test[index_of_value_to_predict_cnn,:])))
+axs[1].legend(bbox_to_anchor=(1,-0.12))
+axs[1].set_title('Probabilities of class membership')
+axs[1].set_ylabel('probability')
+axs[1].set_xlabel('number')
 plt.show()
 
 scores_cnn = model_cnn.evaluate(x_test_dims, y_test)
 print('\nThe CNN model gives us an accuracy of '+str(scores_cnn[1])+' and a loss of '+str(scores_cnn[0]))
 
+
+#############################################################################
 #Exercise 2: Detect the presence of a hand-written digit on an image
+#############################################################################
+
 
 #create random noise images
 random_images=np.random.uniform(0,255,(30000,28 ,28))
@@ -225,7 +239,10 @@ conf_matrix_df.iloc[1,:]=conf_matrix[1,:]
 print(conf_matrix_df)
 
 
+############################################
 #Exercise 3: Practice on other datasets
+############################################
+
 
 #we shall be using the fashion mnist dataset
 #we import the data from tensorflow
@@ -290,4 +307,4 @@ history_fashion=model_fashion.fit(x_fashion_train,y_fashion_train,batch_size=56,
 
 
 #generated images
-scores = model_fashion.evaluate(x_fashion_test,y_fashion_test)
+scores_fashion = model_fashion.evaluate(x_fashion_test,y_fashion_test)
