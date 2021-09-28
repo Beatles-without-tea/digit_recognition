@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
 from sklearn.metrics import confusion_matrix
 import pandas as pd
-
+import seaborn as sns
 #####################################################
 #Exercise 1: Classify images of handwritten digits
 #####################################################
@@ -103,21 +103,21 @@ x_train_dims=np.expand_dims(x_train/255,axis=-1)
 x_test_dims=np.expand_dims(x_test/255,axis=-1)
 
 #model 
+#use sequential type in order to build layer by layer
 model_cnn = keras.Sequential()
-model_cnn.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
-model_cnn.add(layers.MaxPooling2D((2, 2)))
-model_cnn.add(layers.Conv2D(64, (3, 3), activation='relu'))
-model_cnn.add(layers.MaxPooling2D((2, 2)))
+#add convolution layers
+model_cnn.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=(28, 28, 1)))
 model_cnn.add(layers.Conv2D(64, (3, 3), activation='relu'))
 model_cnn.add(layers.Flatten())
-model_cnn.add(layers.Dense(64, activation='relu'))
 model_cnn.add(layers.Dense(10,activation='softmax'))
 model_cnn.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(),
               metrics=['accuracy'])
 
 #illustrate with diagram using function in keras 
 keras.utils.plot_model(model_cnn,show_shapes=True)
+#summary
+model_cnn.summary()
 #fit the model
 history_cnn = model_cnn.fit(x_train_dims, y_train, epochs=epoch_number,validation_split=0.2 )
 #plot training and validation loss and accuracy
@@ -239,6 +239,7 @@ conf_matrix_df.iloc[1,:]=conf_matrix[1,:]
 print(conf_matrix_df)
 
 
+
 ############################################
 #Exercise 3: Practice on other datasets
 ############################################
@@ -273,24 +274,19 @@ plt.imshow(x_fashion_train[1],cmap=plt.get_cmap('gray'))
 plt.show()
 #We can see it's a t-shirt
 
-
-#x_fashion_train=x_fashion_train.reshape(60000,784).astype("float32")/255
-#x_fashion_train=x_fashion_test.reshape(10000,784).astype("float32")/255
-
+#reshape the data
 x_fashion_train=np.expand_dims(x_fashion_train/255,axis=-1)
 x_fashion_test=np.expand_dims(x_fashion_test/255,axis=-1)
 
+#sequential model
+#convolutional neural network with 2 convolution layers
 model_fashion=keras.Sequential()
-model_fashion.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
-model_fashion.add(layers.MaxPooling2D((2, 2)))
-model_fashion.add(layers.Conv2D(64, (3, 3), activation='relu'))
-model_fashion.add(layers.MaxPooling2D((2, 2)))
+model_fashion.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=(28, 28, 1)))
 model_fashion.add(layers.Conv2D(64, (3, 3), activation='relu'))
 model_fashion.add(layers.Flatten())
-model_fashion.add(layers.Dense(64, activation='relu'))
 model_fashion.add(layers.Dense(10,activation='softmax'))
 model_fashion.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(),
               metrics=['accuracy'])
 
 
@@ -299,12 +295,45 @@ keras.utils.plot_model(model_fashion,show_shapes=True)
 #summary
 model_fashion.summary()
 
-
 #set the epoch number
 epoch_number=5
 #train the neural network on the mnist dataset (training set only)
 history_fashion=model_fashion.fit(x_fashion_train,y_fashion_train,batch_size=56,epochs=epoch_number,validation_split=0.2)
 
+#plot training and validation loss and accuracy
+fig,axs=plt.subplots(1,2,figsize=(10,5))
+fig.suptitle('CNN Fashion data Model training and loss')
+axs[0].plot(range(epoch_number),history_fashion.history['accuracy'],label='Training')
+axs[0].plot(range(epoch_number),history_fashion.history['val_accuracy'],label='Testing')
+axs[0].set_xlabel('Epoch')
+axs[0].set_ylabel('Accuracy')
+axs[0].set_title('Model accuracy')
+axs[0].legend()
+axs[1].plot(range(epoch_number),history_fashion.history['loss'],label='Training')
+axs[1].plot(range(epoch_number),history_fashion.history['val_loss'],label='Testing')
+axs[1].set_xlabel('Epoch')
+axs[1].set_ylabel('Loss')
+axs[1].set_title('Model loss')
+axs[1].legend()
+plt.show()
 
-#generated images
+
+#evaluate the performance of the model
 scores_fashion = model_fashion.evaluate(x_fashion_test,y_fashion_test)
+#make predictions on testing data
+y_hat_fashion_test=model_fashion.predict(x_fashion_test)
+
+#visualize predictions
+index_of_value_to_predict_fashion=9
+prediction_fashion=np.where(y_hat_fashion_test[index_of_value_to_predict_fashion,:]==max(y_hat_fashion_test[index_of_value_to_predict_fashion,:]))[0][0]
+#make plot to visualize
+fig,axs=plt.subplots(1,2,figsize=(10,5))
+fig.suptitle('CNN predictions on fashion MNIST')
+axs[0].imshow(x_fashion_test[index_of_value_to_predict_fashion],cmap=plt.get_cmap('gray'))
+axs[0].set_title('True value')
+axs[1].bar(range(0,10),list(y_hat_fashion_test[index_of_value_to_predict_fashion,:]),label='The NN predicts '+class_names[prediction_fashion]+' with probability '+str(max(y_hat_fashion_test[index_of_value_to_predict_fashion,:])))
+axs[1].legend(bbox_to_anchor=(1,-0.12))
+axs[1].set_title('Probabilities of class membership')
+axs[1].set_ylabel('probability')
+axs[1].set_xlabel('number')
+plt.show()
