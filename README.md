@@ -1,5 +1,4 @@
 # Basic digit recognition project
-The project has three parts
 
 1- Classification of handwritten digits from the MNIST dataset
 
